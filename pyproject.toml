@@ -1,0 +1,14 @@
+[project]
+name = "music-pipeline"
+version = "0.1.0"
+description = "Music streaming history ingestion and metadata enrichment pipeline supporting Spotify, Tidal, and Discogs APIs."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Denes Tornyi", email = "astameteo@posteo.net" }
+]
+dependencies = [
+    "requests==2.32.3",
+    "python-dotenv",
+]
