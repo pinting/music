@@ -63,7 +63,7 @@ The `migrate` stage writes to your own collection, which takes a login instead o
 python -m src --stages migrate --limit 5
 ```
 
-The first run prints a login link. After logging in, the browser ends up on a page that does not load, paste its address into the terminal. The refresh token is saved to `.tidal_token.json`, so later runs do not ask again. Items already in the collection are skipped, so the stage can be repeated. Favorites without a Tidal match are left out.
+The first run prints a login link. Open it in a browser on the same machine and log in. The stage listens on the redirect URI and picks up the login by itself. If the browser runs elsewhere and ends up on a page that does not load, paste that page's address (starting with `http://localhost:8080/callback?code=`) into the terminal. The refresh token is saved to `.tidal_token.json`, so later runs do not ask again. Items already in the collection are skipped, so the stage can be repeated. Favorites without a Tidal match are left out.
 
 ## License
 

@@ -3,8 +3,11 @@ import hashlib
 import json
 import os
 import secrets
+import select
+import sys
 import time
 import uuid
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Iterator, Optional
 from urllib.parse import parse_qs, urlencode, urlparse
 
@@ -180,8 +183,8 @@ class TidalUserClient(TidalClient):
         return response.json()
 
     def _login(self) -> dict:
-        """Authorization Code flow with PKCE. Nothing has to listen on the redirect URI, as
-        the user pastes the address the browser ends up on."""
+        """Authorization Code flow with PKCE. The redirect is caught by listening on the redirect
+        URI when it is local, pasting the address the browser ends up on works too."""
         verifier = secrets.token_urlsafe(64)
         digest = hashlib.sha256(verifier.encode("ascii")).digest()
         state = secrets.token_urlsafe(16)
@@ -197,10 +200,19 @@ class TidalUserClient(TidalClient):
 
         print(f"Log in to Tidal: {self.config.tidal_login_url}?{query}")
 
-        redirect = parse_qs(urlparse(input("Paste the address you were redirected to: ").strip()).query)
+        redirect = parse_qs(urlparse(self._wait_for_redirect()).query)
 
-        if redirect.get("state") != [state] or "code" not in redirect:
-            raise RuntimeError(f"Tidal login failed: {redirect.get('error_description') or redirect.get('error')}")
+        if "error" in redirect:
+            raise RuntimeError(f"Tidal login failed: {(redirect.get('error_description') or redirect['error'])[0]}")
+
+        if "code" not in redirect:
+            raise RuntimeError(
+                f"Tidal login failed: no code in the address, paste the one starting with "
+                f"{self.config.tidal_redirect_uri} instead of the login link"
+            )
+
+        if redirect.get("state") != [state]:
+            raise RuntimeError("Tidal login failed: the address belongs to an earlier login link")
 
         response = self.session.post(
             self.auth_url,
@@ -214,9 +226,68 @@ class TidalUserClient(TidalClient):
             timeout=self.config.timeout
         )
 
-        response.raise_for_status()
+        if not response.ok:
+            raise RuntimeError(f"Tidal login failed: {response.status_code} {response.text}")
 
         return response.json()
+
+    def _wait_for_redirect(self) -> str:
+        """Returns the redirect address, from the browser or pasted into the terminal."""
+        server = self._redirect_server()
+
+        if server is None:
+            return input("Paste the address you were redirected to: ").strip()
+
+        print(f"Waiting for the login, or paste the address you were redirected to: ", end="", flush=True)
+
+        try:
+            while not server.redirect:
+                readable, _, _ = select.select([server.socket, sys.stdin], [], [])
+
+                if sys.stdin in readable:
+                    return sys.stdin.readline().strip()
+
+                server.handle_request()
+        finally:
+            server.server_close()
+
+        print()
+
+        return server.redirect
+
+    def _redirect_server(self) -> Optional[HTTPServer]:
+        """Listens on the redirect URI when it points to this machine and stdin can be waited on."""
+        uri = urlparse(self.config.tidal_redirect_uri)
+
+        if uri.hostname not in ("localhost", "127.0.0.1") or os.name == "nt":
+            return None
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                if urlparse(self.path).path != uri.path:
+                    self.send_error(404)
+
+                    return
+
+                self.server.redirect = f"{uri.scheme}://{uri.netloc}{self.path}"
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.end_headers()
+                self.wfile.write("Tidal login received, you can close this tab.".encode("utf-8"))
+
+            def log_message(self, *args):
+                pass
+
+        try:
+            server = HTTPServer((uri.hostname, uri.port or 80), Handler)
+        except OSError as e:
+            print(f"Cannot listen on {uri.netloc} ({e}), the address has to be pasted")
+
+            return None
+
+        server.redirect = None
+
+        return server
 
     def _load_refresh_token(self) -> Optional[str]:
         try:
