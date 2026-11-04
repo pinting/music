@@ -6,6 +6,8 @@ Requires [UV](https://docs.astral.sh/uv/getting-started/installation)!
 
 ## Setup
 
+Request your extended history from Spotify and copy the JSON files into the history folder.
+
 Create a copy of `.env.template` as `.env` and put in your API credentials!
 
 Setup the virtual environment and install dependencies.
