@@ -125,12 +125,14 @@ class SpotifyAlbumDetails:
 
 def parse_isrc(value: Optional[str]) -> Optional[str]:
     """Returns a valid ISRC in its canonical form, as Tidal rejects a batch with an invalid one."""
+
     isrc = (value or "").replace("-", "").strip().upper()
 
     return isrc if re.fullmatch(r"[A-Z]{2}[A-Z0-9]{3}\d{7}", isrc) else None
 
 def _parse_duration(value: Optional[str]) -> Optional[int]:
     """Parses an ISO 8601 duration, such as PT1H5M54S, into milliseconds."""
+
     parts = re.fullmatch(r"PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?", value or "")
 
     if not parts:

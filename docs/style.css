@@ -18,12 +18,22 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+.page-title {
+  margin: 0;
+  padding: 24px 24px 0;
+  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
 #genres {
   position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 24px 24px 2px;
+  padding: 16px 24px 2px;
   margin-bottom: 20px;
 }
 
@@ -160,6 +170,11 @@ body {
 .sprites { position: absolute; }
 
 @media (max-width: 600px) {
+  .page-title {
+    padding: 16px 16px 0;
+    font-size: 1rem;
+  }
+
   #genres { padding-inline: 16px; }
 
   #toggle-genres { margin-inline: 16px; }

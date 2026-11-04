@@ -200,6 +200,7 @@ class Database:
 
     def get_album_tracks(self, album_uri: str) -> list[AlbumTrack]:
         """Returns the full tracklist, or the listened tracks of an album without details."""
+
         query = """
             SELECT track_uri, name, disc_number, track_number, duration_ms, isrc
             FROM album_tracks

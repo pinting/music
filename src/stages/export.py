@@ -66,6 +66,7 @@ class Export:
     @staticmethod
     def _url(prefix: str, uri: Optional[str]) -> str:
         """Builds a page URL from an URI like tidal:album:123."""
+
         item_id = (uri or "").split(":")[-1]
 
         return f"{prefix}{item_id}" if item_id else ""
@@ -73,6 +74,7 @@ class Export:
     @staticmethod
     def _cover(images: Optional[str]) -> str:
         """Spotify lists the images from the largest, the middle one is 300x300."""
+
         covers = json.loads(images or "[]")
 
         return covers[len(covers) // 2]["url"] if covers else ""

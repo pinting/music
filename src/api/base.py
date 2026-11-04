@@ -31,6 +31,7 @@ class APIClient:
 
     def _send(self, method: str, url: str, headers: Optional[dict] = None, **kwargs) -> requests.Response:
         """Returns a successful or 404 response, retrying what is worth retrying."""
+
         retries = self.config.retries
 
         for attempt in range(1, retries + 1):

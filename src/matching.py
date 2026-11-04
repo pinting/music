@@ -10,12 +10,14 @@ _BRACKETS = re.compile(r"\s*[\(\[].*?[\)\]]")
 
 def fold(text: str) -> str:
     """Normalizes a name, ignoring accents, punctuation and case."""
+
     decomposed = unicodedata.normalize("NFKD", text)
 
     return _normalize("".join(c for c in decomposed if not unicodedata.combining(c)))
 
 def contains_words(a: str, b: str) -> bool:
     """Checks if either text is a run of whole words in the other, ignoring accents."""
+
     a, b = fold(a), fold(b)
 
     return bool(a) and bool(b) and (f" {a} " in f" {b} " or f" {b} " in f" {a} ")
@@ -95,10 +97,12 @@ class TitleMatcher:
 
     def artists_match(self, a: str, b: str) -> bool:
         """Credits are written in many ways, such as "A, B", "A & B", or "A With B"."""
+
         return bool(self._artist_names(a) & self._artist_names(b)) or contains_words(a, b)
 
     def title_similarity(self, a: str, b: str) -> float:
         """Exact titles score the highest, then those only differing in edition clutter."""
+
         if _normalize(a) == _normalize(b):
             return 1.0
 
@@ -112,6 +116,7 @@ class TitleMatcher:
 
     def album_queries(self, artist: str, album: str, release_date: Optional[str] = None) -> list[str]:
         """Builds search queries, most specific first."""
+
         year = release_date[:4] if release_date and release_date[:4].isdigit() and len(release_date) >= 4 else ""
         clean = self.clean_for_search(album)
         titles = list(dict.fromkeys((album, clean)))

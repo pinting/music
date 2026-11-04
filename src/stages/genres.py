@@ -49,6 +49,7 @@ class Genres:
 
     def _discogs_genres(self, album: FavoriteAlbum) -> list[str]:
         """A barcode identifies the release, searches by name have to return the album."""
+
         artist = album.artists or ""
         name = album.album_name or ""
         clean = self.matcher.clean_for_search(name)
@@ -71,6 +72,7 @@ class Genres:
 
     def _discogs_artist_genres(self, artist: str) -> list[str]:
         """Without the album, the tags shared by the releases of the exact artist describe it."""
+
         if fold(artist) in VARIOUS_ARTISTS:
             return []
 
@@ -93,6 +95,7 @@ class Genres:
 
     def _is_same_album(self, release: DiscogsRelease, artist: str, name: str) -> bool:
         """Discogs titles are formatted as "Artist (2) - Album", with compilations by "Various"."""
+
         release_artist, _, release_name = release.title.partition(" - ")
         release_artist = re.sub(r"\s*\(\d+\)", "", release_artist)
 

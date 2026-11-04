@@ -63,6 +63,7 @@ class Tidal:
     def _find_album_in(self, album: FavoriteAlbum, tracks: list[AlbumTrack], country: str) -> Optional[AlbumMatch]:
         """Looks for the same barcode, then for the same recordings, then for the title, and
         returns the best scoring candidate. A barcode is the exact edition, so it is final."""
+
         tested = set()
         best, best_key = None, None
 
@@ -107,6 +108,7 @@ class Tidal:
 
     def _albums_of_recordings(self, isrcs: list[str], country: str) -> list[TidalAlbum]:
         """Returns the albums containing the recordings, the ones with the most of them first."""
+
         found, albums = self._safely(f"ISRCs {isrcs}", lambda: self.api.find_tracks_by_isrc(isrcs, country), ([], {}))
         hits = {}
 
@@ -119,6 +121,7 @@ class Tidal:
     def _shortlist(self, album: FavoriteAlbum, candidates: list[TidalAlbum], tested: set, method: str) -> list[TidalAlbum]:
         """Limits the candidates to compare, as each one takes a request. Search results are
         picked by both title and track count, as other editions can be titled differently."""
+
         size = self.config.album_max_candidates
         candidates = [candidate for candidate in candidates if candidate.id not in tested]
 
@@ -154,6 +157,7 @@ class Tidal:
 
     def _match_track_on_album_by_isrc(self, track: FavoriteTrack) -> bool:
         """The lookup by ISRC does not always return the copy on the matched album, so its tracklist comes first."""
+
         if not track.isrc or not track.tidal_album_uri:
             return False
 
@@ -208,6 +212,7 @@ class Tidal:
 
     def _best_recording(self, track: FavoriteTrack, recordings: list[TidalTrack]) -> TidalTrack:
         """One recording can be on many albums, the matched album wins, then the popular one."""
+
         return max(recordings, key=lambda r: (self._is_on_album(r, track), r.popularity, r.id))
 
     def _find_track(self, track: FavoriteTrack) -> tuple[Optional[str], Optional[str]]:

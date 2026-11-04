@@ -12,6 +12,7 @@ def require_env(*names: str) -> list[str]:
 
 def barcode_variants(barcode: str | None) -> list[str]:
     """Spotify pads some barcodes with zeros to 14 digits, while Tidal has them as EAN or UPC."""
+
     if not barcode:
         return []
 
@@ -24,6 +25,7 @@ def is_progress(index: int, total: int, every: int) -> bool:
 
 def merge_distinct(existing: list[str], new: list[str]) -> list[str]:
     """Appends the new items missing from existing, comparing them case-insensitively."""
+
     result = list(existing)
     seen = {item.strip().lower() for item in existing}
 

@@ -62,6 +62,7 @@ class AlbumScorer:
     def _track_overlap(self, tracks: list[AlbumTrack], candidate_tracks: list[TidalTrack]) -> tuple[float, float]:
         """Pairs up the tracks one-to-one, so ten versions of a song only count once. Returns
         the overlap of both tracklists, and the rate of the tracks found on the candidate."""
+
         if not tracks or not candidate_tracks:
             return 0.0, 0.0
 

@@ -59,6 +59,7 @@ class TidalClient(OAuthClient):
 
     def _search(self, query: str, kind: str, country: str) -> tuple[list[str], list[dict]]:
         """Returns the matched ids of a kind in relevance order, and the included resources."""
+
         data = self._request("/searchResults", {"filter[query]": query, "include": kind}, country)
         results = data.get("data", [])
 
@@ -88,6 +89,7 @@ class TidalClient(OAuthClient):
 
     def find_tracks_by_isrc(self, isrcs: list[str], country: str) -> tuple[list[TidalTrack], dict[str, TidalAlbum]]:
         """Returns the tracks of the recordings, and the albums they appear on."""
+
         tracks, albums = [], {}
 
         for data in self._pages("/tracks", {"filter[isrc]": isrcs, "include": "albums"}, country):
@@ -98,6 +100,7 @@ class TidalClient(OAuthClient):
 
     def get_album(self, album_id: str, country: str) -> Optional[TidalAlbum]:
         """Returns an album with its artists and tracks, following the pagination of the tracks."""
+
         key = (album_id, country)
 
         if key not in self.albums:
@@ -147,6 +150,7 @@ class TidalUserClient(TidalClient):
     def add_to_collection(self, kind: str, ids: list[str]) -> list[dict]:
         """Adds albums or tracks and returns the skipped ones, with the reason they were skipped.
         The idempotency key makes it safe to retry the request."""
+
         return self._post(
             f"{self.config.tidal_base_url}/userCollection{kind.capitalize()}/me/relationships/items",
             {"data": [{"id": i, "type": kind} for i in ids]},
@@ -164,6 +168,7 @@ class TidalUserClient(TidalClient):
 
     def _refresh(self) -> Optional[dict]:
         """Returns nothing without a usable refresh token, as that takes a new login."""
+
         token = self._load_refresh_token()
 
         if not token:
@@ -185,6 +190,7 @@ class TidalUserClient(TidalClient):
     def _login(self) -> dict:
         """Authorization Code flow with PKCE. The redirect is caught by listening on the redirect
         URI when it is local, pasting the address the browser ends up on works too."""
+
         verifier = secrets.token_urlsafe(64)
         digest = hashlib.sha256(verifier.encode("ascii")).digest()
         state = secrets.token_urlsafe(16)
@@ -233,6 +239,7 @@ class TidalUserClient(TidalClient):
 
     def _wait_for_redirect(self) -> str:
         """Returns the redirect address, from the browser or pasted into the terminal."""
+        
         server = self._redirect_server()
 
         if server is None:
@@ -257,6 +264,7 @@ class TidalUserClient(TidalClient):
 
     def _redirect_server(self) -> Optional[HTTPServer]:
         """Listens on the redirect URI when it points to this machine and stdin can be waited on."""
+
         uri = urlparse(self.config.tidal_redirect_uri)
 
         if uri.hostname not in ("localhost", "127.0.0.1") or os.name == "nt":
